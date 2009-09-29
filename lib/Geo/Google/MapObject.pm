@@ -18,20 +18,36 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
+    use HTML::Template::Pluggable;
+    use HTML::Template::Plugin::Dot;
     use Geo::Google::MapObject;
-
-=for author to fill in:
-    Brief code example(s) here showing commonest usage(s).
-    This section will be as far as many users bother reading
-    so make it as educational and exeplary as possible.
-  
+    my $map = Geo::Google::MapObject->new(
+        key => 'ABQFbHAATHwok56Qe3MBtg0s7lgkHBS9HKneet7v0OIFhIwnBhTEGCHLTRRRBa_lUOCy1fDamS5PQt8qULYfYQ',
+        zoom => 13,
+        size => '512x400',
+        maptype => 'terrain',
+        markers=>
+        [
+                {location=>'46.818285,14.587601',color=>'green',label=>'M',title=>'Gasthaus Mesner',icon=>'/img/favicon.png'},
+                {location=>'46.818917,14.572672',color=>'red',label=>'S',title=>'Gasthof Sereinig',href=>'http://www.gasthof-sereinig.at/'},
+        ]
+    );
+    my $template = HTML::Template::Pluggable->new(file=>'map.tmpl');
+    $template->param(map->$map);
+    return $template->output;
   
 =head1 DESCRIPTION
 
-=for author to fill in:
-    Write a full description of the module and its features here.
-    Use subsections (=head2, =head3) as appropriate.
-
+This module is intended to provide a server side solution to working with the Google Maps API.
+In particular an object of this class encapsulates a "map" object that provides support
+for the static maps API, the javascript maps API, AJAX calls and non-javascript fallback data;
+but without making any assumptions about the surrounding framework.
+As such it does not concern itself with persistent storage of the map data as to do 
+would commit the code to a particular srorage implementation. In any case implementing
+such storage in a derived class ought to work well. 
+The one assumption about the surrounding environment is that a template framework
+with support for a "dot" notation is being used, for example L<HTML::Template::Pluggable>.
+An important commitment of the module is support for graceful fallback to a functional non-javascript webpage.
 
 =head1 INTERFACE 
 
@@ -45,11 +61,25 @@ Supported arguments are
 
 =item zoom
 
+This represents the zoom level (http://code.google.com/apis/maps/documentation/staticmaps/#Zoomlevels), which
+is a number between 0 and 21 inclusive. This parameter is mandatory.
+
 =item size
+
+The size (http://code.google.com/apis/maps/documentation/staticmaps/#Imagesizes) must either be a string
+consisting of two numbers joined by the symbol C<x>, or a hash ref with width and height parameters. In either
+case the first number is the width and the second the height. If absent the Google API will be allowed to set
+the size as it sees fit.
 
 =item format
 
+The format (http://code.google.com/apis/maps/documentation/staticmaps/#ImageFormats) must be one of 
+png8,  png, png32, gif, jpg, jpg-baseline or absent. If absent the Google API will be allowed to set
+the format as it sees fit.
+
 =item maptype
+
+This must be one of the following: roadmap, satellite, terrain, hybrid.
 
 =item mobile
 
@@ -66,14 +96,38 @@ Defaults to false.
 =item markers
 
 If present the markers should be an array ref so that it can be used in a TMPL_LOOP.
+Each member of the array should be a hash ref and may contain whatever keys are required
+by the javascript client side code. These might include for example: id, title, href, icon.
+However the only members of a marker object that have a fixed meaning are those described by the static maps API
+(http://code.google.com/apis/maps/documentation/staticmaps/#MarkerStyles).
+
+=over
+
+=item color
+
+=item size
+
+=item label
+
+=item location
+
+=back
 
 =item hl
 
-This parameter specifies the language to be used.
+This parameter specifies the language to be used. If absent the API will select the language.
 
 =back
 
 =cut
+
+use Readonly;
+Readonly my %maptype => (
+        roadmap=>0,
+        satellite=>1,
+        terrain=>2,
+        hybrid=>3,
+);
 
 sub new {
     my $class = shift;
@@ -88,6 +142,27 @@ sub new {
     croak "no zoom" unless exists $args{zoom} || exists $args{markers};
     if (exists $args{zoom}) {
         croak "zoom not a number: $args{zoom}" unless ($args{zoom} =~ /^\d{1,2}$/) && $args{zoom} < 22;
+    }
+    if (exists $args{maptype}) {
+	croak "maptype $args{maptype} not recognized" unless exists $maptype{$args{maptype}};
+    }
+    if (exists $args{size}) {
+	my $size = $args{size};
+	my ($width, $height);
+	if (ref($args{size}) eq "HASH") {
+	    $width = $size->{width} || croak "no width";
+	    $height = $size->{height} || croak "no height";
+	}
+	elsif($size =~ /^(\d{1,3})x(\d{1,3})$/) {
+	    $width = $1;
+	    $height = $2;
+	}
+	else {
+	    croak "cannot recognize size";
+	}
+	croak "width should be no more than 640" unless ($width > 0 && $width <= 640);
+	croak "height should be no more than 640" unless ($height > 0 && $height <= 640);
+	$args{size} = {width=>$width,height=>$height};
     }
     return bless \%args, $class;
 }
@@ -104,16 +179,18 @@ sub static_map_url {
     my @params;
 
     # First the easy parameters
-    foreach my $i (qw(center zoom size format mobile key sensor hl)) {
+    foreach my $i (qw(center zoom format mobile key sensor hl)) {
         push @params, "$i=$self->{$i}" if exists $self->{$i};
     }
+    push @params, "size=$self->{size}->{width}x$self->{size}->{height}" if exists $self->{size};
 
     if (exists $self->{markers}) {
         # Now sort the markers
         my %markers;
         foreach my $m (@{$self->{markers}}) {
                 my @style;
-                push @style, "color:$m->{color}" if exists $m->{color};
+                push @style, "color:$m->{color}" if exists $m->{color} && $m->{color} =~ 
+				/^0x[A-F0-9]{6}|black|brown|green|purple|yellow|blue|gray|orange|red|white$/;
                 push @style, "size:$m->{size}" if exists $m->{size} && $m->{size} =~ /^tiny|mid|small$/;
                 push @style, "label:$m->{label}" if exists $m->{label} && $m->{label} =~ /^[A-Z0-9]$/;
                 my $style = join "|", @style;
@@ -146,7 +223,7 @@ sub javascript_url {
 
 =head2 markers
 
-Just returns the marker array.
+This returns the marker array.
 
 =cut
 
@@ -158,6 +235,9 @@ sub markers {
 =head2 json
 
 This function uses the L<JSON> module to return a JSON representation of the object.
+It removes the API key as that should not be required by any javascript client side code.
+If any marker object has a title attribute, then that attribute is encoded so it will display
+correctly.
 
 =cut
 
@@ -167,24 +247,35 @@ sub json {
     my %args = %$self;
     delete $args{key};
     use HTML::Entities;
-    my %maptype = (
-        roadmap=>0,
-        satellite=>1,
-        terrain=>2,
-        hybrid=>3,
-    );
     $args{maptype} = $maptype{$args{maptype}} if exists $args{maptype};
-    if (exists $args{size}) {
-        my @size = split /x/, $args{size};
-        $args{size} = {width=>$size[0], height=>$size[1]};
-    }
     foreach my $i (0..$#{$args{markers}}) {
-        delete $args{markers}[$i]->{color};
-        delete $args{markers}[$i]->{label};
-        delete $args{markers}[$i]->{size};
         $args{markers}[$i]->{title} = decode_entities($args{markers}[$i]->{title}) if exists $args{markers}[$i]->{title};
     }
     return to_json(\%args, {utf8 => 1, allow_blessed => 1});
+}
+
+=head2 width
+
+This returns the width of the image or undef if none has been set.
+
+=cut
+
+sub width {
+    my $self = shift;
+    return undef unless exists $self->{size};
+    return $self->{size}->{width};
+}
+
+=head2 height
+
+This returns the height of the image or undef if none has been set.
+
+=cut
+
+sub height {
+    my $self = shift;
+    return undef unless exists $self->{size};
+    return $self->{size}->{height};
 }
 
 =head1 DIAGNOSTICS
@@ -207,6 +298,18 @@ There must either be a center specified or at least one marker. In the latter ca
 =item C<< no zoom >>
 
 There must be a zoom parameter which is a number from 0 to 21.
+
+=item C<< size length should be 2 >>
+
+If present and in the form of an ARRAY ref, then the size must have two elements.
+
+=item C<< width should be no more than 640 >>
+
+=item C<< height should be no more than 640 >>
+
+=item C<< cannot recognize size >>
+
+The size parameter was neither an ARRAY ref nor a string matching the expected format.
 
 =back
 
@@ -242,7 +345,8 @@ None reported.
 
 =head1 BUGS AND LIMITATIONS
 
-Currently there is no support for paths, polygons or viewports.
+Currently there is no support for paths, polygons or viewports. Also we are currently 
+only supporting version 2 of the API.
 
 Please report any bugs or feature requests to
 C<bug-geo-google-mapobject@rt.cpan.org>, or through the web interface at
