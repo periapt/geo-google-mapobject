@@ -43,11 +43,11 @@ In particular an object of this class encapsulates a "map" object that provides 
 for the static maps API, the javascript maps API, AJAX calls and non-javascript fallback data;
 but without making any assumptions about the surrounding framework.
 As such it does not concern itself with persistent storage of the map data as to do 
-would commit the code to a particular srorage implementation. In any case implementing
+would commit the code to a particular storage implementation. In any case implementing
 such storage in a derived class ought to work well. 
 The one assumption about the surrounding environment is that a template framework
 with support for a "dot" notation is being used, for example L<HTML::Template::Pluggable>.
-An important commitment of the module is support for graceful fallback to a functional non-javascript webpage.
+An important commitment of the module is support for graceful fallback to a functional non-javascript web page.
 
 =head1 INTERFACE 
 
@@ -122,7 +122,7 @@ This parameter specifies the language to be used. If absent the API will select 
 =cut
 
 use Readonly;
-Readonly my %maptype => (
+Readonly my %MAPTYPE => (
         roadmap=>0,
         satellite=>1,
         terrain=>2,
@@ -144,7 +144,7 @@ sub new {
         croak "zoom not a number: $args{zoom}" unless ($args{zoom} =~ /^\d{1,2}$/) && $args{zoom} < 22;
     }
     if (exists $args{maptype}) {
-	croak "maptype $args{maptype} not recognized" unless exists $maptype{$args{maptype}};
+	croak "maptype $args{maptype} not recognized" unless exists $MAPTYPE{$args{maptype}};
     }
     if (exists $args{size}) {
 	my $size = $args{size};
@@ -189,7 +189,7 @@ sub static_map_url {
         my %markers;
         foreach my $m (@{$self->{markers}}) {
                 my @style;
-                push @style, "color:$m->{color}" if exists $m->{color} && $m->{color} =~ 
+                push @style, "color:$m->{color}" if exists $m->{color} && $m->{color} =~
 				/^0x[A-F0-9]{6}|black|brown|green|purple|yellow|blue|gray|orange|red|white$/;
                 push @style, "size:$m->{size}" if exists $m->{size} && $m->{size} =~ /^tiny|mid|small$/;
                 push @style, "label:$m->{label}" if exists $m->{label} && $m->{label} =~ /^[A-Z0-9]$/;
@@ -247,7 +247,7 @@ sub json {
     my %args = %$self;
     delete $args{key};
     use HTML::Entities;
-    $args{maptype} = $maptype{$args{maptype}} if exists $args{maptype};
+    $args{maptype} = $MAPTYPE{$args{maptype}} if exists $args{maptype};
     foreach my $i (0..$#{$args{markers}}) {
         $args{markers}[$i]->{title} = decode_entities($args{markers}[$i]->{title}) if exists $args{markers}[$i]->{title};
     }

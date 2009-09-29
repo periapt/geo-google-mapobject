@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 15;
+use Test::More tests => 17;
 use Geo::Google::MapObject;
 use Test::Differences;
 use HTML::Template::Pluggable;
@@ -35,6 +35,8 @@ EOS
    ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=512x512", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
    ok($map->json eq '{"zoom":"10","sensor":"false","markers":[],"mobile":"false","center":"Berlin","size":{"width":"512","height":"512"}}', "json");
+   ok($map->width == 512, "width");
+   ok($map->height == 512, "height");
 }
 
 {
