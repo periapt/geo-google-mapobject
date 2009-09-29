@@ -1,0 +1,223 @@
+#!perl 
+
+use strict;
+use warnings;
+use Test::More tests => 15;
+use Geo::Google::MapObject;
+use Test::Differences;
+use HTML::Template::Pluggable;
+use HTML::Template::Plugin::Dot;
+use Readonly;
+Readonly our $template =><<EOS;
+<html>
+   <head>
+     <title>Test</title>
+     <script src="<TMPL_VAR NAME="map.javascript_url">" type="text/javascript"></script>
+   </head>
+   <body>
+     <img alt="TEST" src="<TMPL_VAR NAME="map.static_map_url">" width="512" height="512"/>
+     <TMPL_IF NAME="map.markers">
+     <table>
+     <TMPL_LOOP NAME="map.markers">
+       <tr><td><TMPL_VAR NAME="this.location"></td></tr>
+     </TMPL_LOOP>
+     </table>
+     </TMPL_IF>
+   </body>
+</html>
+EOS
+;
+
+
+{
+   my $map = Geo::Google::MapObject->new ( key=>'api1', center=>'Berlin',zoom=>10);
+   ok($map, "map created");
+   ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api1&amp;sensor=false", "static_map_url");
+   ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
+   ok($map->json eq '{"zoom":"10","sensor":"false","markers":[],"mobile":"false","center":"Berlin"}', "json");
+}
+
+{
+   my $map = Geo::Google::MapObject->new ( key=>'api2', center=>'Berlin',zoom=>10);
+   my $t = HTML::Template::Pluggable->new(scalarref=>\$template, die_on_bad_params=>0);
+   $t->param(map=>$map);
+   Readonly my $output=><<EOS;
+<html>
+   <head>
+     <title>Test</title>
+     <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=api2&amp;sensor=false" type="text/javascript"></script>
+   </head>
+   <body>
+     <img alt="TEST" src="http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api2&amp;sensor=false" width="512" height="512"/>
+     
+   </body>
+</html>
+EOS
+;
+   eq_or_diff($t->output, $output, "zero markers");
+}
+
+
+{
+   my $map = Geo::Google::MapObject->new ( key=>'api3', center=>'Berlin',zoom=>10, markers=>[{location=>'Zoo'},{location=>'Garten'},{location=>'Polizei'}]);
+   my $t = HTML::Template::Pluggable->new(scalarref=>\$template, die_on_bad_params=>0);
+   $t->param(map=>$map);
+   Readonly my $output=><<EOS;
+<html>
+   <head>
+     <title>Test</title>
+     <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=api3&amp;sensor=false" type="text/javascript"></script>
+   </head>
+   <body>
+     <img alt="TEST" src="http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api3&amp;sensor=false&amp;markers=Zoo|Garten|Polizei" width="512" height="512"/>
+     
+     <table>
+     
+       <tr><td>Zoo</td></tr>
+     
+       <tr><td>Garten</td></tr>
+     
+       <tr><td>Polizei</td></tr>
+     
+     </table>
+     
+   </body>
+</html>
+EOS
+;
+   eq_or_diff($t->output, $output, "location markers");
+   ok($map->json eq '{"zoom":"10","sensor":"false","markers":[{"location":"Zoo"},{"location":"Garten"},{"location":"Polizei"}],"mobile":"false","center":"Berlin"}', "json");
+}
+
+
+
+{
+   my $map = Geo::Google::MapObject->new ( key=>'api4', center=>'Berlin',zoom=>10, markers=>[{location=>'Zoo',label=>'Z'},{location=>'Garten',label=>'G'},{location=>'Polizei',label=>'P'}]);
+   my $t = HTML::Template::Pluggable->new(scalarref=>\$template, die_on_bad_params=>0);
+   $t->param(map=>$map);
+   Readonly my $output=><<EOS;
+<html>
+   <head>
+     <title>Test</title>
+     <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=api4&amp;sensor=false" type="text/javascript"></script>
+   </head>
+   <body>
+     <img alt="TEST" src="http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api4&amp;sensor=false&amp;markers=label:G|Garten&amp;markers=label:P|Polizei&amp;markers=label:Z|Zoo" width="512" height="512"/>
+     
+     <table>
+     
+       <tr><td>Zoo</td></tr>
+     
+       <tr><td>Garten</td></tr>
+     
+       <tr><td>Polizei</td></tr>
+     
+     </table>
+     
+   </body>
+</html>
+EOS
+;
+   eq_or_diff($t->output, $output, "label markers");
+   ok($map->json eq '{"zoom":"10","sensor":"false","markers":[{"location":"Zoo"},{"location":"Garten"},{"location":"Polizei"}],"mobile":"false","center":"Berlin"}', "json");
+}
+
+
+
+
+
+{
+   my $map = Geo::Google::MapObject->new ( key=>'api5', center=>'Berlin',zoom=>10, markers=>[{location=>'Zoo',color=>'red'},{location=>'Garten',color=>'red'},{location=>'Polizei',color=>'green'}]);
+   my $t = HTML::Template::Pluggable->new(scalarref=>\$template, die_on_bad_params=>0);
+   $t->param(map=>$map);
+   Readonly my $output=><<EOS;
+<html>
+   <head>
+     <title>Test</title>
+     <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=api5&amp;sensor=false" type="text/javascript"></script>
+   </head>
+   <body>
+     <img alt="TEST" src="http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api5&amp;sensor=false&amp;markers=color:green|Polizei&amp;markers=color:red|Zoo|Garten" width="512" height="512"/>
+     
+     <table>
+     
+       <tr><td>Zoo</td></tr>
+     
+       <tr><td>Garten</td></tr>
+     
+       <tr><td>Polizei</td></tr>
+     
+     </table>
+     
+   </body>
+</html>
+EOS
+;
+   eq_or_diff($t->output, $output, "label markers");
+   ok($map->json eq '{"zoom":"10","sensor":"false","markers":[{"location":"Zoo"},{"location":"Garten"},{"location":"Polizei"}],"mobile":"false","center":"Berlin"}', "json");
+}
+
+{
+   my $map = Geo::Google::MapObject->new ( key=>'api6', center=>'Berlin',zoom=>10, markers=>[{location=>'Zoo',color=>'red',size=>'tiny'},{location=>'Garten',color=>'red',size=>'small'},{location=>'Polizei',color=>'green'}]);
+   my $t = HTML::Template::Pluggable->new(scalarref=>\$template, die_on_bad_params=>0);
+   $t->param(map=>$map);
+   Readonly my $output=><<EOS;
+<html>
+   <head>
+     <title>Test</title>
+     <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=api6&amp;sensor=false" type="text/javascript"></script>
+   </head>
+   <body>
+     <img alt="TEST" src="http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api6&amp;sensor=false&amp;markers=color:green|Polizei&amp;markers=color:red|size:small|Garten&amp;markers=color:red|size:tiny|Zoo" width="512" height="512"/>
+     
+     <table>
+     
+       <tr><td>Zoo</td></tr>
+     
+       <tr><td>Garten</td></tr>
+     
+       <tr><td>Polizei</td></tr>
+     
+     </table>
+     
+   </body>
+</html>
+EOS
+;
+   eq_or_diff($t->output, $output, "label markers");
+   ok($map->json eq '{"zoom":"10","sensor":"false","markers":[{"location":"Zoo"},{"location":"Garten"},{"location":"Polizei"}],"mobile":"false","center":"Berlin"}', "json");
+}
+
+{
+   my $map = Geo::Google::MapObject->new (hl=>'de', key=>'api7', center=>'Berlin',zoom=>10, markers=>[{location=>'Zoo',color=>'red',size=>'tiny'},{location=>'Garten',color=>'red',size=>'small'},{location=>'Polizei',color=>'green'},{location=>'Schlo&szlig;',color=>'green'}]);
+   my $t = HTML::Template::Pluggable->new(scalarref=>\$template, die_on_bad_params=>0);
+   $t->param(map=>$map);
+   Readonly my $output=><<EOS;
+<html>
+   <head>
+     <title>Test</title>
+     <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=api7&amp;sensor=false&amp;hl=de" type="text/javascript"></script>
+   </head>
+   <body>
+     <img alt="TEST" src="http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api7&amp;sensor=false&amp;hl=de&amp;markers=color:green|Polizei|Schlo&szlig;&amp;markers=color:red|size:small|Garten&amp;markers=color:red|size:tiny|Zoo" width="512" height="512"/>
+     
+     <table>
+     
+       <tr><td>Zoo</td></tr>
+     
+       <tr><td>Garten</td></tr>
+     
+       <tr><td>Polizei</td></tr>
+     
+       <tr><td>Schlo&szlig;</td></tr>
+     
+     </table>
+     
+   </body>
+</html>
+EOS
+;
+   eq_or_diff($t->output, $output, "label markers");
+   ok($map->json eq '{"hl":"de","zoom":"10","sensor":"false","markers":[{"location":"Zoo"},{"location":"Garten"},{"location":"Polizei"},{"location":"Schlo&szlig;"}],"mobile":"false","center":"Berlin"}', "json");
+}
+

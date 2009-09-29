@@ -6,7 +6,7 @@ use Carp;
 
 =head1 NAME
 
-Geo::Google::MapObject - [One line description of module's purpose here] 
+Geo::Google::MapObject - Code to help with managing the server side of the Google Maps API
 
 =head1 VERSION
 
@@ -35,91 +35,214 @@ our $VERSION = '0.01';
 
 =head1 INTERFACE 
 
-=for author to fill in:
-    Write a separate section listing the public components of the modules
-    interface. These normally consist of either subroutines that may be
-    exported, or methods that may be called on objects belonging to the
-    classes provided by the module.
+=head2 new
+
+Supported arguments are
+
+=over
+
+=item center
+
+=item zoom
+
+=item size
+
+=item format
+
+=item maptype
+
+=item mobile
+
+Defaults to false.
+
+=item key
+
+The mandatory API key.
+
+=item sensor
+
+Defaults to false.
+
+=item markers
+
+If present the markers should be an array ref so that it can be used in a TMPL_LOOP.
+
+=item hl
+
+This parameter specifies the language to be used.
+
+=back
 
 =cut
 
-=head2 function1
+sub new {
+    my $class = shift;
+    my %args = @_;
+    $args{mobile} = 'false' unless exists $args{mobile} && $args{mobile} eq 'true';
+    $args{sensor} = 'false' unless exists $args{sensor} && $args{sensor} eq 'true';
+    if (exists $args{markers}) {
+        croak "markers should be an ARRAY" unless ref($args{markers}) eq "ARRAY";
+    }
+    croak "no API key" unless exists $args{key};
+    croak "no center" unless exists $args{center} || exists $args{markers};
+    croak "no zoom" unless exists $args{zoom} || exists $args{markers};
+    if (exists $args{zoom}) {
+        croak "zoom not a number: $args{zoom}" unless ($args{zoom} =~ /^\d{1,2}$/) && $args{zoom} < 22;
+    }
+    return bless \%args, $class;
+}
+
+=head2 static_map_url
+
+Returns a URL suitable for use as a fallback inside a noscript element.
 
 =cut
 
-sub function1 {
+sub static_map_url {
+    my $self = shift;
+    my $url = "http://maps.google.com/maps/api/staticmap?";
+    my @params;
+
+    # First the easy parameters
+    foreach my $i (qw(center zoom size format mobile key sensor hl)) {
+        push @params, "$i=$self->{$i}" if exists $self->{$i};
+    }
+
+    if (exists $self->{markers}) {
+        # Now sort the markers
+        my %markers;
+        foreach my $m (@{$self->{markers}}) {
+                my @style;
+                push @style, "color:$m->{color}" if exists $m->{color};
+                push @style, "size:$m->{size}" if exists $m->{size} && $m->{size} =~ /^tiny|mid|small$/;
+                push @style, "label:$m->{label}" if exists $m->{label} && $m->{label} =~ /^[A-Z0-9]$/;
+                my $style = join "|", @style;
+                push @{$markers{$style}},  $m->{location} || croak "no location for $style";
+        }
+        foreach my $m (sort keys %markers) {
+                my $param = "markers=";
+                $param .= "$m|" if $m;
+                $param .= join '|', @{$markers{$m}};
+                push @params, $param;
+        }
+    }
+
+    $url .= join "&amp;", @params;
+    return $url;
+}
+
+=head2 javascript_url
+
+Returns a URL suitable for use in loading the dynamic map API.
+
+=cut
+
+sub javascript_url {
+   my $self = shift;
+   my $url = "http://maps.google.com/maps?file=api&amp;v=2&amp;key=$self->{key}&amp;sensor=$self->{sensor}";
+   $url .= "&amp;hl=$self->{hl}" if exists $self->{hl};
+   return $url;
+}
+
+=head2 markers
+
+Just returns the marker array.
+
+=cut
+
+sub markers {
+    my $self = shift;
+    return $self->{markers} || [];
+}
+
+=head2 json
+
+This function uses the L<JSON> module to return a JSON representation of the object.
+
+=cut
+
+sub json {
+    my $self = shift;
+    use JSON;
+    my %args = %$self;
+    delete $args{key};
+    use HTML::Entities;
+    my %maptype = (
+        roadmap=>0,
+        satellite=>1,
+        terrain=>2,
+        hybrid=>3,
+    );
+    $args{maptype} = $maptype{$args{maptype}} if exists $args{maptype};
+    if (exists $args{size}) {
+        my @size = split /x/, $args{size};
+        $args{size} = {width=>$size[0], height=>$size[1]};
+    }
+    foreach my $i (0..$#{$args{markers}}) {
+        delete $args{markers}[$i]->{color};
+        delete $args{markers}[$i]->{label};
+        delete $args{markers}[$i]->{size};
+        $args{markers}[$i]->{title} = decode_entities($args{markers}[$i]->{title}) if exists $args{markers}[$i]->{title};
+    }
+    return to_json(\%args, {utf8 => 1, allow_blessed => 1});
 }
 
 =head1 DIAGNOSTICS
 
-=for author to fill in:
-    List every single error and warning message that the module can
-    generate (even the ones that will "never happen"), with a full
-    explanation of each problem, one or more likely causes, and any
-    suggested remedies.
-
 =over
 
-=item C<< Error message here, perhaps with %s placeholders >>
+=item C<< markers should be an ARRAY >>
 
-[Description of error here]
+The markers parameter of the constructor must be an ARRAY ref of marker configuration data.
 
-=item C<< Another error message here >>
+=item C<< no API key >>
 
-[Description of error here]
+To use this module you must sign up for an API key (http://code.google.com/apis/maps/signup.html) and supply it as
+the key parameter.
 
-[Et cetera, et cetera]
+=item C<< no center >>
+
+There must either be a center specified or at least one marker. In the latter case the first marker will be used as the center.
+
+=item C<< no zoom >>
+
+There must be a zoom parameter which is a number from 0 to 21.
 
 =back
 
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-=for author to fill in:
-    A full explanation of any configuration system(s) used by the
-    module, including the names and locations of any configuration
-    files, and the meaning of any environment variables or properties
-    that can be set. These descriptions must also include details of any
-    configuration language used.
-  
 Geo::Google::MapObject requires no configuration files or environment variables.
-
 
 =head1 DEPENDENCIES
 
-=for author to fill in:
-    A list of all the other modules that this module relies upon,
-    including any restrictions on versions, and an indication whether
-    the module is part of the standard Perl distribution, part of the
-    module's distribution, or must be installed separately. ]
+=over 
 
-None.
+=item Templating framework
 
+We assume the use of L<HTML::Template::Pluggable> and L<HTML::Template::Plugin>
+though other template frameworks may work.
+
+=item Google Maps API
+
+You need to have one of these which can be obtained from L<http://code.google.com/apis/maps/signup.html>.
+
+=item Javascript and AJAX
+
+We assume a degree of familiarity with javascript, AJAX and client side programming.
+For the purposes of documentation we assume YUI: L<http://developer.yahoo.com/yui/>, but this
+choice of framework is not mandated.
+
+=back
 
 =head1 INCOMPATIBILITIES
 
-=for author to fill in:
-    A list of any modules that this module cannot be used in conjunction
-    with. This may be due to name conflicts in the interface, or
-    competition for system or program resources, or due to internal
-    limitations of Perl (for example, many modules that use source code
-    filters are mutually incompatible).
-
 None reported.
-
 
 =head1 BUGS AND LIMITATIONS
 
-=for author to fill in:
-    A list of known problems with the module, together with some
-    indication Whether they are likely to be fixed in an upcoming
-    release. Also a list of restrictions on the features the module
-    does provide: data types that cannot be handled, performance issues
-    and the circumstances in which they may arise, practical
-    limitations on the size of data sets, special cases that are not
-    (yet) handled, etc.
-
-No bugs have been reported.
+Currently there is no support for paths, polygons or viewports.
 
 Please report any bugs or feature requests to
 C<bug-geo-google-mapobject@rt.cpan.org>, or through the web interface at
