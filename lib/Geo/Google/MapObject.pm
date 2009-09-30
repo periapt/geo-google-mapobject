@@ -147,24 +147,29 @@ sub new {
 	croak "maptype $args{maptype} not recognized" unless exists $MAPTYPE{$args{maptype}};
     }
     if (exists $args{size}) {
-	my $size = $args{size};
-	my ($width, $height);
-	if (ref($args{size}) eq "HASH") {
-	    $width = $size->{width} || croak "no width";
-	    $height = $size->{height} || croak "no height";
-	}
-	elsif($size =~ /^(\d{1,3})x(\d{1,3})$/) {
-	    $width = $1;
-	    $height = $2;
-	}
-	else {
-	    croak "cannot recognize size";
-	}
-	croak "width should be no more than 640" unless ($width > 0 && $width <= 640);
-	croak "height should be no more than 640" unless ($height > 0 && $height <= 640);
+	my ($width, $height) = _parse_size($args{size});
 	$args{size} = {width=>$width,height=>$height};
     }
     return bless \%args, $class;
+}
+
+sub _parse_size {
+    my $size = shift;
+    my ($width, $height);
+    if (ref($size) eq "HASH") {
+        $width = $size->{width} || croak "no width";
+        $height = $size->{height} || croak "no height";
+    }
+    elsif($size =~ /^(\d{1,3})x(\d{1,3})$/) {
+        $width = $1;
+        $height = $2;
+    }
+    else {
+        croak "cannot recognize size";
+    }
+    croak "width should be no more than 640" unless ($width > 0 && $width <= 640);
+    croak "height should be no more than 640" unless ($height > 0 && $height <= 640);
+    return ($width, $height);
 }
 
 =head2 static_map_url
