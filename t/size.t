@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 27;
+use Test::More tests => 33;
 use Geo::Google::MapObject;
 
 {
@@ -54,4 +54,12 @@ like($@, qr/^height should positive and be no more than 640 /, "negative height"
 eval{ Geo::Google::MapObject->new ( key=>'api1', center=>'Berlin',zoom=>10,size=>{width=>10,height=>641})};
 like($@, qr/^height should positive and be no more than 640 /, "boundary condition");
 
-
+{
+   my $map = Geo::Google::MapObject->new ( key=>'api1', center=>'Berlin',zoom=>10);
+   ok($map, "map created");
+   ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api1&amp;sensor=false", "static_map_url");
+   ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
+   ok($map->json eq '{"zoom":"10","sensor":"false","markers":[],"mobile":"false","center":"Berlin"}', "json");
+   ok(!defined($map->width), "width");
+   ok(!defined($map->height), "height");
+}
