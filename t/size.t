@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use Test::More tests => 33;
+use Test::JSON;
 use Geo::Google::MapObject;
 
 {
@@ -9,7 +10,7 @@ use Geo::Google::MapObject;
    ok($map, "map created");
    ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=512x640", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
-   ok($map->json eq '{"zoom":"10","sensor":"false","markers":[],"mobile":"false","center":"Berlin","size":{"width":"512","height":"640"}}', "json");
+   is_json($map->json, '{"zoom":"10","sensor":"false","markers":[],"mobile":"false","center":"Berlin","size":{"width":"512","height":"640"}}', "json");
    ok($map->width == 512, "width");
    ok($map->height == 640, "height");
 }
@@ -19,7 +20,7 @@ use Geo::Google::MapObject;
    ok($map, "map created");
    ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=600x100", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
-   ok($map->json eq '{"zoom":"10","sensor":"false","markers":[],"mobile":"false","center":"Berlin","size":{"width":"600","height":"100"}}', "json");
+   is_json($map->json, '{"zoom":"10","sensor":"false","markers":[],"mobile":"false","center":"Berlin","size":{"width":"600","height":"100"}}', "json");
    ok($map->width == 600, "width");
    ok($map->height == 100, "height");
 }
@@ -29,7 +30,7 @@ use Geo::Google::MapObject;
    ok($map, "map created");
    ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=100x200", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
-   ok($map->json eq '{"zoom":"10","sensor":"false","markers":[],"mobile":"false","center":"Berlin","size":{"width":"100","height":"200"}}', "json");
+   is_json($map->json, '{"zoom":"10","sensor":"false","markers":[],"mobile":"false","center":"Berlin","size":{"width":"100","height":"200"}}', "json");
    ok($map->width == 100, "width");
    ok($map->height == 200, "height");
 }
@@ -58,7 +59,7 @@ like($@, qr/^height should positive and be no more than 640 /, "boundary conditi
    ok($map, "map created");
    ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api1&amp;sensor=false", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
-   ok($map->json eq '{"zoom":"10","sensor":"false","markers":[],"mobile":"false","center":"Berlin"}', "json");
+   is_json($map->json, '{"zoom":"10","sensor":"false","markers":[],"mobile":"false","center":"Berlin"}', "json");
    ok(!defined($map->width), "width");
    ok(!defined($map->height), "height");
 }

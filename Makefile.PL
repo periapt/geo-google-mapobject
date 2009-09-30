@@ -10,6 +10,7 @@ WriteMakefile(
     PL_FILES            => {},
     PREREQ_PM => {
         'Test::More' => 0,
+	'Test::JSON' => 0,
 	'HTML::Template::Pluggable' => 0
     },
     LICENSE		=> 'perl',

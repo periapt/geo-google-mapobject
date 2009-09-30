@@ -5,6 +5,7 @@ use warnings;
 use Test::More tests => 17;
 use Geo::Google::MapObject;
 use Test::Differences;
+use Test::JSON;
 use HTML::Template::Pluggable;
 use HTML::Template::Plugin::Dot;
 our $template =<<EOS;
@@ -33,7 +34,7 @@ EOS
    ok($map, "map created");
    ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=512x512", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
-   ok($map->json eq '{"zoom":"10","sensor":"false","markers":[],"mobile":"false","center":"Berlin","size":{"width":"512","height":"512"}}', "json");
+   is_json($map->json, '{"sensor":"false","zoom":"10","markers":[],"mobile":"false","center":"Berlin","size":{"width":"512","height":"512"}}', "json");
    ok($map->width == 512, "width");
    ok($map->height == 512, "height");
 }
@@ -87,7 +88,7 @@ EOS
 EOS
 ;
    eq_or_diff($t->output, $output, "location markers");
-   ok($map->json eq'{"zoom":"10","sensor":"false","markers":[{"location":"Zoo"},{"location":"Garten"},{"location":"Polizei"}],"mobile":"false","center":"Berlin","size":{"width":"512","height":"512"}}', "json");
+   is_json($map->json, '{"zoom":"10","sensor":"false","markers":[{"location":"Zoo"},{"location":"Garten"},{"location":"Polizei"}],"mobile":"false","center":"Berlin","size":{"width":"512","height":"512"}}', "json");
 }
 
 
@@ -120,7 +121,7 @@ EOS
 EOS
 ;
    eq_or_diff($t->output, $output, "label markers");
-   ok($map->json eq '{"zoom":"10","sensor":"false","markers":[{"location":"Zoo","label":"Z"},{"location":"Garten","label":"G"},{"location":"Polizei","label":"P"}],"mobile":"false","center":"Berlin","size":{"width":"512","height":"512"}}', "json");
+   is_json($map->json, '{"zoom":"10","sensor":"false","markers":[{"location":"Zoo","label":"Z"},{"location":"Garten","label":"G"},{"location":"Polizei","label":"P"}],"mobile":"false","center":"Berlin","size":{"width":"512","height":"512"}}', "json");
 }
 
 
@@ -155,7 +156,7 @@ EOS
 EOS
 ;
    eq_or_diff($t->output, $output, "label markers");
-   ok($map->json eq '{"zoom":"10","sensor":"false","markers":[{"color":"red","location":"Zoo"},{"color":"red","location":"Garten"},{"color":"green","location":"Polizei"}],"mobile":"false","center":"Berlin","size":{"width":"512","height":"512"}}', "json");
+   is_json($map->json, '{"zoom":"10","sensor":"false","markers":[{"color":"red","location":"Zoo"},{"color":"red","location":"Garten"},{"color":"green","location":"Polizei"}],"mobile":"false","center":"Berlin","size":{"width":"512","height":"512"}}', "json");
 }
 
 {
@@ -186,7 +187,7 @@ EOS
 EOS
 ;
    eq_or_diff($t->output, $output, "label markers");
-   ok($map->json eq '{"zoom":"10","sensor":"false","markers":[{"color":"red","location":"Zoo","size":"tiny"},{"color":"red","location":"Garten","size":"small"},{"color":"green","location":"Polizei"}],"mobile":"false","center":"Berlin","size":{"width":"512","height":"512"}}', "json");
+   is_json($map->json, '{"zoom":"10","sensor":"false","markers":[{"color":"red","location":"Zoo","size":"tiny"},{"color":"red","location":"Garten","size":"small"},{"color":"green","location":"Polizei"}],"mobile":"false","center":"Berlin","size":{"width":"512","height":"512"}}', "json");
 }
 
 {
@@ -219,6 +220,6 @@ EOS
 EOS
 ;
    eq_or_diff($t->output, $output, "label markers");
-   ok($map->json eq '{"zoom":"10","sensor":"false","mobile":"false","center":"Berlin","size":{"width":"512","height":"512"},"hl":"de","markers":[{"color":"red","location":"Zoo","size":"tiny"},{"color":"red","location":"Garten","size":"small"},{"color":"green","location":"Polizei"},{"color":"green","location":"Schlo&szlig;"}]}', "json");
+   is_json($map->json, '{"zoom":"10","sensor":"false","mobile":"false","center":"Berlin","size":{"width":"512","height":"512"},"hl":"de","markers":[{"color":"red","location":"Zoo","size":"tiny"},{"color":"red","location":"Garten","size":"small"},{"color":"green","location":"Polizei"},{"color":"green","location":"Schlo&szlig;"}]}', "json");
 }
 
