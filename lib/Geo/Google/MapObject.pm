@@ -285,6 +285,7 @@ sub height {
 
 =head1 DIAGNOSTICS
 
+
 =over
 
 =item C<< markers should be an ARRAY >>
@@ -302,22 +303,32 @@ There must either be a center specified or at least one marker. In the latter ca
 
 =item C<< no zoom >>
 
+=item C<< zoom not a number: %s >>
+
 There must be a zoom parameter which is a number from 0 to 21.
 
-=item C<< size length should be 2 >>
+=item C<< maptype %s  not recognized >>
 
-If present and in the form of an ARRAY ref, then the size must have two elements.
+The maptype must be one of roadmap, satellite, terrain, hybrid.
 
-=item C<< width should be no more than 640 >>
+=item C<< no width >>
 
-=item C<< height should be no more than 640 >>
+=item C<< no height >>
+
+=item C<< width should be positive and no more than 640 >>
+
+=item C<< height should be positive and no more than 640 >>
 
 =item C<< cannot recognize size >>
 
-The size parameter was neither an ARRAY ref nor a string matching the expected format.
+The size parameter must either be a string like "300x500" or a hash array like {width=>300,height=>500}.
+And both width and height must be between 1 and 640 inclusive.
+
+=item C<< no location for %s >>
+
+Every marker object must have a location.
 
 =back
-
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
