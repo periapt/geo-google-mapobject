@@ -7,8 +7,7 @@ use Geo::Google::MapObject;
 use Test::Differences;
 use HTML::Template::Pluggable;
 use HTML::Template::Plugin::Dot;
-use Readonly;
-Readonly our $template =><<EOS;
+our $template =<<EOS;
 <html>
    <head>
      <title>Test</title>
@@ -43,7 +42,7 @@ EOS
    my $map = Geo::Google::MapObject->new ( key=>'api2', center=>'Berlin',zoom=>10, size=>"512x512");
    my $t = HTML::Template::Pluggable->new(scalarref=>\$template, die_on_bad_params=>0);
    $t->param(map=>$map);
-   Readonly my $output=><<EOS;
+   my $output =<<EOS;
 <html>
    <head>
      <title>Test</title>
@@ -64,7 +63,7 @@ EOS
    my $map = Geo::Google::MapObject->new ( key=>'api3', center=>'Berlin',zoom=>10, markers=>[{location=>'Zoo'},{location=>'Garten'},{location=>'Polizei'}], size=>"512x512");
    my $t = HTML::Template::Pluggable->new(scalarref=>\$template, die_on_bad_params=>0);
    $t->param(map=>$map);
-   Readonly my $output=><<EOS;
+   my $output =<<EOS;
 <html>
    <head>
      <title>Test</title>
@@ -97,7 +96,7 @@ EOS
    my $map = Geo::Google::MapObject->new ( key=>'api4', center=>'Berlin',zoom=>10, markers=>[{location=>'Zoo',label=>'Z'},{location=>'Garten',label=>'G'},{location=>'Polizei',label=>'P'}], size=>"512x512");
    my $t = HTML::Template::Pluggable->new(scalarref=>\$template, die_on_bad_params=>0);
    $t->param(map=>$map);
-   Readonly my $output=><<EOS;
+   my $output =<<EOS;
 <html>
    <head>
      <title>Test</title>
@@ -132,7 +131,7 @@ EOS
    my $map = Geo::Google::MapObject->new ( key=>'api5', center=>'Berlin',zoom=>10, markers=>[{location=>'Zoo',color=>'red'},{location=>'Garten',color=>'red'},{location=>'Polizei',color=>'green'}], size=>"512x512");
    my $t = HTML::Template::Pluggable->new(scalarref=>\$template, die_on_bad_params=>0);
    $t->param(map=>$map);
-   Readonly my $output=><<EOS;
+   my $output =<<EOS;
 <html>
    <head>
      <title>Test</title>
@@ -163,7 +162,7 @@ EOS
    my $map = Geo::Google::MapObject->new ( key=>'api6', center=>'Berlin',zoom=>10, markers=>[{location=>'Zoo',color=>'red',size=>'tiny'},{location=>'Garten',color=>'red',size=>'small'},{location=>'Polizei',color=>'green'}], size=>"512x512");
    my $t = HTML::Template::Pluggable->new(scalarref=>\$template, die_on_bad_params=>0);
    $t->param(map=>$map);
-   Readonly my $output=><<EOS;
+   my $output =<<EOS;
 <html>
    <head>
      <title>Test</title>
@@ -194,7 +193,7 @@ EOS
    my $map = Geo::Google::MapObject->new (hl=>'de', key=>'api7', center=>'Berlin',zoom=>10, markers=>[{location=>'Zoo',color=>'red',size=>'tiny'},{location=>'Garten',color=>'red',size=>'small'},{location=>'Polizei',color=>'green'},{location=>'Schlo&szlig;',color=>'green'}], size=>"512x512");
    my $t = HTML::Template::Pluggable->new(scalarref=>\$template, die_on_bad_params=>0);
    $t->param(map=>$map);
-   Readonly my $output=><<EOS;
+   my $output =<<EOS;
 <html>
    <head>
      <title>Test</title>

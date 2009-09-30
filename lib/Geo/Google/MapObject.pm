@@ -121,8 +121,7 @@ This parameter specifies the language to be used. If absent the API will select 
 
 =cut
 
-use Readonly;
-Readonly my %MAPTYPE => (
+my %MAPTYPE = (
         roadmap=>0,
         satellite=>1,
         terrain=>2,
