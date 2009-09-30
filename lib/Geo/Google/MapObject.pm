@@ -167,8 +167,8 @@ sub _parse_size {
     else {
         croak "cannot recognize size";
     }
-    croak "width should be no more than 640" unless ($width > 0 && $width <= 640);
-    croak "height should be no more than 640" unless ($height > 0 && $height <= 640);
+    croak "width should positive and be no more than 640" unless ($width > 0 && $width <= 640);
+    croak "height should positive and be no more than 640" unless ($height > 0 && $height <= 640);
     return ($width, $height);
 }
 
