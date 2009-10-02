@@ -89,4 +89,13 @@ EOS
    ok($map->height == 512, "height");
 }
 
+{
+   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", zoom=>'AUTO', center=>'AUTO', markers=>[{location=>"-16.8057131,179.999998"},{location=>"-16.805713,-179.999993"},{location=>"-16.8057129,179.999999"}]);
+   ok($map, "map created");
+   ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=-16.8057130500001,-179.9999975&amp;zoom=21&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=512x512&amp;markers=-16.8057131,179.999998|-16.805713,-179.999993|-16.8057129,179.999999", "static_map_url");
+   ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
+   is_json($map->json, '{"zoom":"21","sensor":"false","markers":[{"location":"-16.8057131,179.999998"},{"location":"-16.805713,-179.999993"},{"location":"-16.8057129,179.999999"}],"mobile":"false","size":{"width":"512","height":"512"},"center":"-16.8057130500001,-179.9999975"}', "json");
+   ok($map->width == 512, "width");
+   ok($map->height == 512, "height");
+}
 
