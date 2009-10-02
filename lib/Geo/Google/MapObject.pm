@@ -10,11 +10,11 @@ Geo::Google::MapObject - Code to help with managing the server side of the Googl
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
@@ -59,10 +59,18 @@ Supported arguments are
 
 =item center
 
+If absent the Google maps API will be left to work it the center. You can also ask this module
+to calculate the center by setting the parameter to AUTO. For AUTO calculation of the center all
+the markers must be in the form "decimal,decimal".
+
 =item zoom
 
 This represents the zoom level (http://code.google.com/apis/maps/documentation/staticmaps/#Zoomlevels), which
-is a number between 0 and 21 inclusive. This parameter is mandatory.
+is a number between 0 and 21 inclusive. If absent the API will be allowed to set it's own API. This tends to not
+work terribly well in javascript but your javascript can intercept this and set the zoom level.
+It can also be set to 'AUTO' in which case this module will try to work out a zoom level. For AUTO calculation of the center all
+the markers must be in the form "decimal,decimal".
+
 
 =item size
 
@@ -137,8 +145,11 @@ sub new {
         croak "markers should be an ARRAY" unless ref($args{markers}) eq "ARRAY";
     }
     croak "no API key" unless exists $args{key};
-    croak "no center" unless exists $args{center} || exists $args{markers};
-    croak "no zoom" unless exists $args{zoom} || exists $args{markers};
+    if (exists $args{markers} && ((exists $args{zoom} && $args{zoom} eq "AUTO") || (exists $args{center} && $args{center} eq "AUTO"))) {
+	my ($zoom, $center) = _autocalculate(%args);
+	$args{zoom} = $zoom if $args{zoom} eq "AUTO";
+	$args{center} = $center if $args{center} eq "AUTO";
+    }
     if (exists $args{zoom}) {
         croak "zoom not a number: $args{zoom}" unless ($args{zoom} =~ /^\d{1,2}$/) && $args{zoom} < 22;
     }
@@ -169,6 +180,52 @@ sub _parse_size {
     croak "width should positive and be no more than 640" unless ($width > 0 && $width <= 640);
     croak "height should positive and be no more than 640" unless ($height > 0 && $height <= 640);
     return ($width, $height);
+}
+
+sub _autocalculate {
+    my %args = @_;
+
+    use Math::Trig qw(deg2rad great_circle_distance great_circle_midpoint rad2deg);
+    # At the end we guarantee that any two points are less than $distance apart
+    # and that ($ctheta, $cphi) is (more or less) in the middle.
+    my ($ctheta, $cphi);
+    my $distance = 0;
+    my $firstpoint = 1;
+
+    foreach my $l (@{$args{markers}}) {
+	croak "location missing" unless exists $l->{location};
+	if ($l->{location} =~  /^(\-?\d+\.?\d*),(\-?\d+\.?\d*)$/) {
+		my $phi = deg2rad(90-$1);
+		my $theta = deg2rad($2);
+
+		if ($firstpoint) {
+			$cphi = $phi;
+			$ctheta = $theta;
+			$firstpoint = 0;
+		}
+		else {
+			my $new_distance = great_circle_distance($theta, $phi, $ctheta, $cphi);
+			if ($new_distance > $distance) {
+				$distance = $new_distance + $distance/2;
+				my ($mtheta, $mphi) = great_circle_midpoint($theta, $phi, $ctheta, $cphi);
+				if (defined $mtheta  && defined $mphi ) {
+					$ctheta = $mtheta;
+					$cphi = $mphi;
+				}
+				else {
+					return (21, "0,0");
+				}
+			}
+		}
+	}
+    }
+    my $zoom = 21;
+    $zoom = int -(log $distance)/(log 2)  if $distance > 0;  ## no cr itic
+    $zoom = 0 if $zoom < 0;
+    $zoom = 21 if $zoom > 21;
+    my $longitude = rad2deg($ctheta);
+    my $latitude = 90-rad2deg($cphi);
+    return ($zoom, "$latitude,$longitude");
 }
 
 =head2 static_map_url
@@ -241,7 +298,7 @@ sub markers {
 This function uses the L<JSON> module to return a JSON representation of the object.
 It removes the API key as that should not be required by any javascript client side code.
 If any marker object has a title attribute, then that attribute is encoded so it will display
-correctly.
+correctly during mouse overs.
 
 =cut
 
@@ -295,12 +352,6 @@ The markers parameter of the constructor must be an ARRAY ref of marker configur
 
 To use this module you must sign up for an API key (http://code.google.com/apis/maps/signup.html) and supply it as
 the key parameter.
-
-=item C<< no center >>
-
-There must either be a center specified or at least one marker. In the latter case the first marker will be used as the center.
-
-=item C<< no zoom >>
 
 =item C<< zoom not a number: %s >>
 
@@ -360,8 +411,28 @@ None reported.
 
 =head1 BUGS AND LIMITATIONS
 
-Currently there is no support for paths, polygons or viewports. Also we are currently 
-only supporting version 2 of the API.
+=over
+
+=item paths etc
+
+Currently there is no support for paths, polygons or viewports.
+
+=item version 3
+
+We are currently only supporting version 2 of the API.
+
+=item title attributes of markers
+
+We encode the title attributes of markers in the C<< json >> function as this seems to be necessary.
+However I have not yet managed to get a decent test script for this behaviour.
+
+=item character encoding 
+
+This module is only tested against UTF-8 web pages. I have no intention
+of changing this as I cannot think of why anyone would consciously choose to encode
+web pages in any other way. I am open to persuasion however.
+
+=back
 
 Please report any bugs or feature requests to
 C<bug-geo-google-mapobject@rt.cpan.org>, or through the web interface at

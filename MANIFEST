@@ -14,3 +14,4 @@ t/pod.t
 t/podspell.t
 t/googlemap.t
 t/size.t
+t/autozoom.t
