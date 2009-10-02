@@ -11,7 +11,9 @@ WriteMakefile(
     PREREQ_PM => {
         'Test::More' => 0,
 	'Test::JSON' => 0,
-	'HTML::Template::Pluggable' => 0
+	'HTML::Template::Pluggable' => 0,
+	'Scalar::Util' => 0,
+	'Math::Trig' => 0
     },
     LICENSE		=> 'perl',
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

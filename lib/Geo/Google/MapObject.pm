@@ -57,20 +57,28 @@ Supported arguments are
 
 =over
 
+=item autozoom 
+
+If no center and/or zoom is specified this paramter can be used to calculate suitable
+values by a process of averaging the markers. If this parameter is an integer between 1
+and 21 then that number is taken as a maximum zoom level and the builtin
+algorithm, C<< calculateZoomAndCenter >>, is used with that maximum zoom level.
+If the parameter is a CODE ref, then that function is used instead. The CODE ref must
+take an ARRAY ref of marker specifications as an input, and must return a pair consisting of the zoom
+level as an integer followed by a latitude-longitude string representing the center.
+Finally if the argument is blessed and has a C<< calculateZoomAndCenter >> method,
+that will be used.  For AUTO calculation of the center or zoom all
+the markers must be in the form "decimal,decimal".
+
 =item center
 
-If absent the Google maps API will be left to work it the center. You can also ask this module
-to calculate the center by setting the parameter to AUTO. For AUTO calculation of the center all
-the markers must be in the form "decimal,decimal".
+If absent (and no autozoom has been set) the Google maps API will be left to work it the center.
 
 =item zoom
 
 This represents the zoom level (http://code.google.com/apis/maps/documentation/staticmaps/#Zoomlevels), which
 is a number between 0 and 21 inclusive. If absent the API will be allowed to set it's own API. This tends to not
 work terribly well in javascript but your javascript can intercept this and set the zoom level.
-It can also be set to 'AUTO' in which case this module will try to work out a zoom level. For AUTO calculation of the center all
-the markers must be in the form "decimal,decimal".
-
 
 =item size
 
@@ -145,10 +153,10 @@ sub new {
         croak "markers should be an ARRAY" unless ref($args{markers}) eq "ARRAY";
     }
     croak "no API key" unless exists $args{key};
-    if (exists $args{markers} && ((exists $args{zoom} && $args{zoom} eq "AUTO") || (exists $args{center} && $args{center} eq "AUTO"))) {
+    if (exists $args{markers} && exists $args{autozoom}) {
 	my ($zoom, $center) = _autocalculate(%args);
-	$args{zoom} = $zoom if $args{zoom} eq "AUTO";
-	$args{center} = $center if $args{center} eq "AUTO";
+	$args{zoom} ||= $zoom;
+	$args{center} ||= $center;
     }
     if (exists $args{zoom}) {
         croak "zoom not a number: $args{zoom}" unless ($args{zoom} =~ /^\d{1,2}$/) && $args{zoom} < 22;
@@ -184,7 +192,25 @@ sub _parse_size {
 
 sub _autocalculate {
     my %args = @_;
+    my $autozoom = $args{autozoom};
+    my $markers = $args{markers} || croak "cannot calculate autozoom without markers";
+    use Scalar::Util qw(blessed looks_like_number);
+    if (looks_like_number($autozoom) && $autozoom >= 0 && $autozoom <= 21) {
+	return caclulateZoomAndCenter($markers, $autozoom);
+    }
+    elsif (ref($autozoom) eq "CODE") {
+	return &$autozoom($markers);
+    }
+    elsif (blessed($autozoom) && $autozoom->can('caclulateZoomAndCenter')) {
+	return $autozoom->caclulateZoomAndCenter($markers);
+    }
+    croak "$autozoom not recognized as autozoom";
+}
 
+sub caclulateZoomAndCenter {
+    my $markers = shift;
+    my $maxautozoom = shift;
+    
     use Math::Trig qw(deg2rad great_circle_distance great_circle_midpoint rad2deg);
     # At the end we guarantee that any two points are less than $distance apart
     # and that ($ctheta, $cphi) is (more or less) in the middle.
@@ -192,7 +218,7 @@ sub _autocalculate {
     my $distance = 0;
     my $firstpoint = 1;
 
-    foreach my $l (@{$args{markers}}) {
+    foreach my $l (@{$markers}) {
 	croak "location missing" unless exists $l->{location};
 	if ($l->{location} =~  /^(\-?\d+\.?\d*),(\-?\d+\.?\d*)$/) {
 		my $phi = deg2rad(90-$1);
@@ -213,16 +239,16 @@ sub _autocalculate {
 					$cphi = $mphi;
 				}
 				else {
-					return (21, "0,0");
+					return ($maxautozoom, "0,0");
 				}
 			}
 		}
 	}
     }
-    my $zoom = 21;
+    my $zoom = $maxautozoom;
     $zoom = int -(log $distance)/(log 2)  if $distance > 0;  ## no cr itic
     $zoom = 0 if $zoom < 0;
-    $zoom = 21 if $zoom > 21;
+    $zoom = $maxautozoom if $zoom > $maxautozoom;
     my $longitude = rad2deg($ctheta);
     my $latitude = 90-rad2deg($cphi);
     return ($zoom, "$latitude,$longitude");
