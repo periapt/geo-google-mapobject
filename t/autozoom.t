@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 36;
+use Test::More tests => 42;
 use Geo::Google::MapObject;
 use Test::Differences;
 use Test::JSON;
@@ -30,7 +30,7 @@ EOS
 
 
 {
-   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", zoom=>'AUTO', center=>'AUTO', markers=>[{location=>"58.222128,-5.316499"}]);
+   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", autozoom=>21, markers=>[{location=>"58.222128,-5.316499"}]);
    ok($map, "map created");
    ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=58.222128,-5.316499&amp;zoom=21&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=512x512&amp;markers=58.222128,-5.316499", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
@@ -40,7 +40,7 @@ EOS
 }
 
 {
-   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", zoom=>'AUTO', center=>'AUTO', markers=>[{location=>"58.222128,-5.316499"},{location=>"58.22211,-5.315194"}]);
+   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", autozoom=>21, markers=>[{location=>"58.222128,-5.316499"},{location=>"58.22211,-5.315194"}]);
    ok($map, "map created");
    ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=58.2221190016633,-5.31584649983455&amp;zoom=16&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=512x512&amp;markers=58.222128,-5.316499|58.22211,-5.315194", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
@@ -50,7 +50,7 @@ EOS
 }
 
 {
-   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", zoom=>'AUTO', center=>'AUTO', markers=>[{location=>"58.222128,-5.316499"},{location=>"58.22211,-5.315194"},{location=>"58.198937,-5.20546"}]);
+   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", autozoom=>21, markers=>[{location=>"58.222128,-5.316499"},{location=>"58.22211,-5.315194"},{location=>"58.198937,-5.20546"}]);
    ok($map, "map created");
    ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=58.210539904431,-5.26063523415997&amp;zoom=9&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=512x512&amp;markers=58.222128,-5.316499|58.22211,-5.315194|58.198937,-5.20546", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
@@ -60,7 +60,7 @@ EOS
 }
 
 {
-   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", zoom=>'AUTO', center=>'AUTO', markers=>[{location=>"-16.807513,179.991839"},{location=>"-16.795715,-179.996503"},{location=>"-16.800433,179.999099"}]);
+   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", autozoom=>21, markers=>[{location=>"-16.807513,179.991839"},{location=>"-16.795715,-179.996503"},{location=>"-16.800433,179.999099"}]);
    ok($map, "map created");
    ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=-16.8016140820493,179.99766818121&amp;zoom=11&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=512x512&amp;markers=-16.807513,179.991839|-16.795715,-179.996503|-16.800433,179.999099", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
@@ -70,7 +70,7 @@ EOS
 }
 
 {
-   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", zoom=>'AUTO', center=>'AUTO', markers=>[{location=>"-16.807513,179.991839"},{location=>"-16.805715,-179.996503"},{location=>"-16.800433,179.999099"}]);
+   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", autozoom=>21, markers=>[{location=>"-16.807513,179.991839"},{location=>"-16.805715,-179.996503"},{location=>"-16.800433,179.999099"}]);
    ok($map, "map created");
    ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=-16.8066140820709,179.997668027625&amp;zoom=12&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=512x512&amp;markers=-16.807513,179.991839|-16.805715,-179.996503|-16.800433,179.999099", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
@@ -80,7 +80,7 @@ EOS
 }
 
 {
-   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", zoom=>'AUTO', center=>'AUTO', markers=>[{location=>"-16.805513,179.999939"},{location=>"-16.805715,-179.999903"},{location=>"-16.805433,179.999099"}]);
+   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", autozoom=>21, markers=>[{location=>"-16.805513,179.999939"},{location=>"-16.805715,-179.999903"},{location=>"-16.805433,179.999099"}]);
    ok($map, "map created");
    ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=-16.8055235005175,179.99955849976&amp;zoom=15&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=512x512&amp;markers=-16.805513,179.999939|-16.805715,-179.999903|-16.805433,179.999099", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
@@ -90,7 +90,7 @@ EOS
 }
 
 {
-   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", zoom=>'AUTO', center=>'AUTO', markers=>[{location=>"-16.8057131,179.999998"},{location=>"-16.805713,-179.999993"},{location=>"-16.8057129,179.999999"}]);
+   my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", autozoom=>21, markers=>[{location=>"-16.8057131,179.999998"},{location=>"-16.805713,-179.999993"},{location=>"-16.8057129,179.999999"}]);
    ok($map, "map created");
    ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=-16.8057130500001,-179.9999975&amp;zoom=21&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=512x512&amp;markers=-16.8057131,179.999998|-16.805713,-179.999993|-16.8057129,179.999999", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");

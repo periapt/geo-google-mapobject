@@ -59,7 +59,7 @@ Supported arguments are
 
 =item autozoom 
 
-If no center and/or zoom is specified this paramter can be used to calculate suitable
+If no center and/or zoom is specified this parameter can be used to calculate suitable
 values by a process of averaging the markers. If this parameter is an integer between 1
 and 21 then that number is taken as a maximum zoom level and the builtin
 algorithm, C<< calculateZoomAndCenter >>, is used with that maximum zoom level.
@@ -157,6 +157,7 @@ sub new {
 	my ($zoom, $center) = _autocalculate(%args);
 	$args{zoom} ||= $zoom;
 	$args{center} ||= $center;
+	delete $args{autozoom};
     }
     if (exists $args{zoom}) {
         croak "zoom not a number: $args{zoom}" unless ($args{zoom} =~ /^\d{1,2}$/) && $args{zoom} < 22;
@@ -196,21 +197,29 @@ sub _autocalculate {
     my $markers = $args{markers} || croak "cannot calculate autozoom without markers";
     use Scalar::Util qw(blessed looks_like_number);
     if (looks_like_number($autozoom) && $autozoom >= 0 && $autozoom <= 21) {
-	return caclulateZoomAndCenter($markers, $autozoom);
+	return calculateZoomAndCenter($markers, $autozoom);
     }
     elsif (ref($autozoom) eq "CODE") {
 	return &$autozoom($markers);
     }
-    elsif (blessed($autozoom) && $autozoom->can('caclulateZoomAndCenter')) {
-	return $autozoom->caclulateZoomAndCenter($markers);
+    elsif (blessed($autozoom) && $autozoom->can('calculateZoomAndCenter')) {
+	return $autozoom->calculateZoomAndCenter($markers);
     }
     croak "$autozoom not recognized as autozoom";
 }
 
-sub caclulateZoomAndCenter {
+=head2 calculateZoomAndCenter
+
+This function tales a reference to an array of marker specifications
+and a maximum zoom level and returns a pair consisting of a suggested zoom level
+and a center.
+
+=cut
+
+sub calculateZoomAndCenter {
     my $markers = shift;
     my $maxautozoom = shift;
-    
+
     use Math::Trig qw(deg2rad great_circle_distance great_circle_midpoint rad2deg);
     # At the end we guarantee that any two points are less than $distance apart
     # and that ($ctheta, $cphi) is (more or less) in the middle.
