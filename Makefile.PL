@@ -13,7 +13,7 @@ WriteMakefile(
 	'Test::JSON' => 0,
 	'HTML::Template::Pluggable' => 0,
 	'Scalar::Util' => 0,
-	'Math::Trig' => 0
+	'Math::Trig' => '1.2'
     },
     LICENSE		=> 'perl',
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

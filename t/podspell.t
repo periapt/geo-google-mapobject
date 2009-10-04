@@ -15,6 +15,23 @@ if ( $EVAL_ERROR ) {
    plan( skip_all => $msg );
 }
 
-Test::Spelling::add_stopwords(qw(CPAN Bamber AnnoCPAN RT internalId lang param HTML URLs href sitemap SQL bladger javascript loopName URL globalvars pageId pageid sitemaps XML changefreq en lastmod notfound pagelookup runmode runmodes url utf namespace upto stderr API JSON YUI center fallback hl json maptype noscript viewports color gif png roadmap UTF autozoom calculateZoomAndCenter));
+Test::Spelling::add_stopwords(qw(CPAN Bamber AnnoCPAN RT internalId lang param HTML URLs href sitemap SQL bladger javascript loopName URL globalvars pageId pageid sitemaps XML changefreq en lastmod notfound pagelookup runmode runmodes url utf namespace upto stderr API JSON YUI center fallback hl json maptype noscript viewports color gif png roadmap UTF autozoom calculate_zoom_and_center APIs GIcon GMarker GMarkers ORM draggable js yui tmpl recognize recognized));
 Test::Spelling::all_pod_files_spelling_ok();
+
+#     APIs
+#     GIcon
+#     GMarker
+#     GMarkers
+#     Gmarker
+#     ORM
+#     draggable
+#     initialized
+#     js
+#     mouseover
+#     optinally
+#     recognize
+#     recognized
+#     specializing
+#     tmpl
+#     yui
 

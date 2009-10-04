@@ -4,4 +4,4 @@ Revision history for Geo-Google-MapObject
        Initial release.
 
 0.02  Fri Sep 30 
-      Added autocalculation of zoom level and center
+      Added autocalculation of zoom level and center. Went over documentation very carefully.

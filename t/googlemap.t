@@ -201,7 +201,7 @@ EOS
      <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=api7&amp;sensor=false&amp;hl=de" type="text/javascript"></script>
    </head>
    <body>
-     <img alt="TEST" src="http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api7&amp;sensor=false&amp;hl=de&amp;size=512x512&amp;markers=color:green|Polizei|Schlo&szlig;&amp;markers=color:red|size:small|Garten&amp;markers=color:red|size:tiny|Zoo" width="512" height="512"/>
+     <img alt="TEST" src="http://maps.google.com/maps/api/staticmap?center=Berlin&amp;zoom=10&amp;mobile=false&amp;key=api7&amp;sensor=false&amp;size=512x512&amp;markers=color:green|Polizei|Schlo&szlig;&amp;markers=color:red|size:small|Garten&amp;markers=color:red|size:tiny|Zoo" width="512" height="512"/>
      
      <table>
      
