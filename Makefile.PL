@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use ExtUtils::MakeMaker;
 
-WriteMakefile(
+my %conf = (
     NAME                => 'Geo::Google::MapObject',
     AUTHOR              => 'Nicholas Bamber <nicholas@periapt.co.uk>',
     VERSION_FROM        => 'lib/Geo/Google/MapObject.pm',
@@ -15,7 +15,20 @@ WriteMakefile(
 	'Scalar::Util' => 0,
 	'Math::Trig' => '1.2'
     },
+    META_MERGE    => {
+        resources => {
+            repository => 'http://github.com/periapt/geo-google-mapobject',
+        },
+    },
     LICENSE		=> 'perl',
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Geo-Google-MapObject-*' },
 );
+
+unless (eval { ExtUtils::MakeMaker->VERSION(6.46) }) {
+    delete $conf{META_MERGE};
+}
+
+WriteMakefile(%conf);
+
+
