@@ -5,3 +5,6 @@ Revision history for Geo-Google-MapObject
 
 0.02  Fri Sep 30 
       Added autocalculation of zoom level and center. Went over documentation very carefully.
+
+0.03  Mon Oct 5 2009
+      Added Test::Prereq. Added JSON dependency.

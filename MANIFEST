@@ -15,3 +15,4 @@ t/podspell.t
 t/googlemap.t
 t/size.t
 t/autozoom.t
+t/prereq.t

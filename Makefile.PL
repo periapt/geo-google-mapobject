@@ -13,7 +13,8 @@ my %conf = (
 	'Test::JSON' => 0,
 	'HTML::Template::Pluggable' => 0,
 	'Scalar::Util' => 0,
-	'Math::Trig' => '1.2'
+	'Math::Trig' => '1.2',
+	'JSON'=>0
     },
     META_MERGE    => {
         resources => {
