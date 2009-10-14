@@ -827,6 +827,10 @@ C<bug-geo-google-mapobject@rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org>.
 
 
+=head1 ACKNOWLEDGEMENTS
+
+Thanks to Andreas Koenig for pointing out that this module had an issue with C<< Build.PL >>. 
+
 =head1 AUTHOR
 
 Nicholas Bamber  C<< <nicholas@periapt.co.uk> >>
