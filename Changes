@@ -8,3 +8,6 @@ Revision history for Geo-Google-MapObject
 
 0.03  Mon Oct 5 2009
       Added Test::Prereq. Added JSON dependency.
+
+0.04  Sun Oct 18 2009
+      Tried to make deep testing more robust.

@@ -5,7 +5,8 @@ use warnings;
 use Test::More tests => 42;
 use Geo::Google::MapObject;
 use Test::Differences;
-use Test::JSON;
+use Test::Deep;
+use JSON;
 use HTML::Template::Pluggable;
 use HTML::Template::Plugin::Dot;
 our $template =<<EOS;
@@ -27,6 +28,7 @@ our $template =<<EOS;
 </html>
 EOS
 ;
+
 
 
 {
@@ -84,7 +86,7 @@ EOS
    ok($map, "map created");
    ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=-16.8055235005175,179.99955849976&amp;zoom=15&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=512x512&amp;markers=-16.805513,179.999939|-16.805715,-179.999903|-16.805433,179.999099", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
-   is_json($map->json, '{"zoom":"15","sensor":"false","markers":[{"location":"-16.805513,179.999939"},{"location":"-16.805715,-179.999903"},{"location":"-16.805433,179.999099"}],"mobile":"false","size":{"width":"512","height":"512"},"center":"-16.8055235005175,179.99955849976"}', "json");
+   is_json($map->json, '{"zoom":"15","sensor":"false","markers":[{"location":"-16.805513,179.999939"},{"location":"-16.805715,-179.999903"},{"location":"-16.805433,179.999099"}],"mobile":"false","size":{"width":"512","height":"512"},"center":"-16.8055235005174,179.99955849975"}', "json");
    ok($map->width == 512, "width");
    ok($map->height == 512, "height");
 }
@@ -97,5 +99,22 @@ EOS
    is_json($map->json, '{"zoom":"21","sensor":"false","markers":[{"location":"-16.8057131,179.999998"},{"location":"-16.805713,-179.999993"},{"location":"-16.8057129,179.999999"}],"mobile":"false","size":{"width":"512","height":"512"},"center":"-16.8057130500001,-179.9999975"}', "json");
    ok($map->width == 512, "width");
    ok($map->height == 512, "height");
+}
+
+
+sub is_json {
+	my $got_text = shift;
+	my $expected_text = shift;
+	my $name = shift;
+	my $got = JSON->new->utf8->decode($got_text);
+	my $expected = JSON->new->decode($expected_text);
+	my $ex_center = $expected->{center};
+	my ($ex_x, $ex_y) = split(",", $ex_center);
+	$expected->{center} = code(sub {
+		my ($x, $y) = split(",", shift);
+		my $tolerance = 0.0000000001;
+		return abs($x-$ex_x) < $tolerance && abs($y-$ex_y) < $tolerance;
+	});
+	cmp_deeply($got, $expected, $name);
 }
 
