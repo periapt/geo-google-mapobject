@@ -11,3 +11,6 @@ Revision history for Geo-Google-MapObject
 
 0.04  Sun Oct 18 2009
       Tried to make deep testing more robust.
+
+0.05  Tue Oct 20 2009
+      Also missed issue with static_map_url

@@ -54,7 +54,7 @@ EOS
 {
    my $map = Geo::Google::MapObject->new ( key=>'api1', size=>"512x512", autozoom=>21, markers=>[{location=>"58.222128,-5.316499"},{location=>"58.22211,-5.315194"},{location=>"58.198937,-5.20546"}]);
    ok($map, "map created");
-   ok($map->static_map_url eq "http://maps.google.com/maps/api/staticmap?center=58.210539904431,-5.26063523415997&amp;zoom=9&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=512x512&amp;markers=58.222128,-5.316499|58.22211,-5.315194|58.198937,-5.20546", "static_map_url");
+   like($map->static_map_url, qr"http://maps\.google\.com/maps/api/staticmap?center=58\.21053\d+,-5\.26063523\d+&amp;zoom=9&amp;mobile=false&amp;key=api1&amp;sensor=false&amp;size=512x512&amp;markers=58\.222128,-5\.316499|58\.22211,-5\.315194|58\.198937,-5\.20546", "static_map_url");
    ok($map->javascript_url eq "http://maps.google.com/maps?file=api&amp;v=2&amp;key=api1&amp;sensor=false", "javascript_url");
    is_json($map->json, '{"zoom":"9","sensor":"false","markers":[{"location":"58.222128,-5.316499"},{"location":"58.22211,-5.315194"},{"location":"58.198937,-5.20546"}],"mobile":"false","size":{"width":"512","height":"512"},"center":"58.210539904431,-5.26063523415997"}', "json");
    ok($map->width == 512, "width");
