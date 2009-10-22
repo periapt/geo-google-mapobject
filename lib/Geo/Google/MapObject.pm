@@ -10,11 +10,11 @@ Geo::Google::MapObject - Code to help with managing the server side of the Googl
 
 =head1 VERSION
 
-Version 0.05
+Version 0.05_1
 
 =cut
 
-our $VERSION = '0.05';
+our $VERSION = '0.05_1';
 
 =head1 SYNOPSIS
 
