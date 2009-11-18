@@ -15,5 +15,5 @@ Revision history for Geo-Google-MapObject
 0.05  Tue Oct 20 2009
       Also missed issue with static_map_url
 
-0.05_1 Thu Oct 22 2009
+0.06  Wed Nov 18 2009
       More autozoom static_map_url tests
