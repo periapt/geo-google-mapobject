@@ -52,14 +52,14 @@ our $VERSION = '0.06';
 
 This module is intended to provide a server side solution to working with the Google Maps API.
 In particular an object of this class encapsulates a "map" object that provides support
-for the static maps API, the javascript maps API, AJAX calls and non-javascript fallback data;
+for the static maps API, the JavaScript maps API, AJAX calls and non-JavaScript fallback data;
 but without making many assumptions about the surrounding framework.
 We do assume that a template framework with support for a "dot" notation is being used, for example L<HTML::Template::Pluggable>.
-An important commitment of the module is support for graceful and consistent fallback to a functional non-javascript web page.
+An important commitment of the module is support for graceful and consistent fallback to a functional non-JavaScript web page.
 
-The javascript and static Google map APIs do not behave in quite the same way when zoom and center are not specified.
+The JavaScript and static Google map APIs do not behave in quite the same way when zoom and center are not specified.
 Specifically it works quite well with the static maps (L<http://code.google.com/apis/maps/documentation/staticmaps/#ImplicitPositioning>)
-but not so well with the javascript API.
+but not so well with the JavaScript API.
 To compensate for this the module gives a choice between: specifying the center and zoom levels; allowing the APIs and client side code to
 do whatever they think best; using a built in algorithm to calculate a sensible zoom and center; and finally supplying ones
 own algorithm to calculate a sensible zoom and center.
@@ -89,7 +89,7 @@ as it has no meaning once the zoom level and center have been determined.
 =item center
 
 This must be a location that would be recognized by the Google maps API.
-If absent, and if no autozoom has been set, the Google maps API and client side javascript code 
+If absent, and if no autozoom has been set, the Google maps API and client side JavaScript code 
 must between them work out a center.
 
 =item zoom
@@ -114,7 +114,7 @@ in the dynamic API.
 =item maptype
 
 This must be one of the following: 'roadmap', 'satellite', 'terrain', 'hybrid's described in L<http://code.google.com/apis/maps/documentation/staticmaps/#MapTypes>. The C<< json >> method will translate these into numerical codes roadmap => 0, satellite => 1, terrain => 2 and hybrid => 3
-as this makes it easy for the javascript code (L<http://code.google.com/apis/maps/documentation/reference.html#GMapType.Constants>) to translate this numerical code into the client side codes. For example:
+as this makes it easy for the JavaScript code (L<http://code.google.com/apis/maps/documentation/reference.html#GMapType.Constants>) to translate this numerical code into the client side codes. For example:
 
   var mapping = new Array(G_NORMAL_MAP, G_SATELLITE_MAP, G_PHYSICAL_MAP, G_HYBRID_MAP);
   var maptype = mapping[data.maptype];
@@ -139,7 +139,7 @@ by it being used by the C<< static_map_url >> and C<< javascript_url >> methods.
 
 If present the markers should be an array ref of marker specifications so that it can be used in a TMPL_LOOP.
 Each marker specification should be a hash ref and may contain whatever keys are required
-by the javascript client side code. It must however have a C<< location >> field which must be interpretable
+by the JavaScript client side code. It must however have a C<< location >> field which must be interpretable
 by the Google API as a location. In general this means the location must be a string of the form "decimal,decimal",
 where the first decimal is the latitude and the second longitude.
 Other fields might include for example: id, title, href, icon. Generally these just get passed through by the C<< json >>
@@ -150,12 +150,12 @@ The GIcon class (L<http://code.google.com/apis/maps/documentation/reference.html
 the look and feel of the markers in the dynamic API; but I can find no easy way of consistently replicating the 
 the static marker styles in the dynamic API. The only other field which gets special treatment is C<< title >>. The C<< json >>
 method will encode the title field. So for example if a marker has a title field of C<< 'Sclo&szlig;' >>, then
-if the javascript code uses this as the title attribute when creating a GMarker, then hovering the mouse over that marker
+if the JavaScript code uses this as the title attribute when creating a GMarker, then hovering the mouse over that marker
 will display the German word for castle.
 
 =item hl
 
-This parameter specifies the language to be used. If absent the API will select the language. Only the dynamic javascript API
+This parameter specifies the language to be used. If absent the API will select the language. Only the dynamic JavaScript API
 seems to use this parameter as described in L<http://code.google.com/apis/maps/documentation/#Localization>. As such this
 is used in the C<< javascript_url >> method.
 
@@ -399,7 +399,7 @@ sub markers {
 =head2 json
 
 This function uses the L<JSON> module to return a JSON representation of the object.
-It removes the API key as that should not be required by any javascript client side code.
+It removes the API key as that should not be required by any JavaScript client side code.
 If any marker object has a title attribute, then that attribute is encoded so it will display
 correctly during mouse overs.
 
@@ -445,7 +445,7 @@ sub height {
 =head1 TUTORIAL
 
 This module only covers the server side of a two way conversation between server and a talkative client.
-As such the tutorial must also consider HTML and javascript.
+As such the tutorial must also consider HTML and JavaScript.
 Also to understand this tutorial we assume at least passing familiarity with the following:
 
 =over
@@ -469,18 +469,18 @@ We probably have a template file, map.tmpl, some thing like the following:
     <head>
       <title>Test Map Tutorial</title>
 
-      <!-- This way we tell the javascript what URL to contact the server with. -->
+      <!-- This way we tell the JavaScript what URL to contact the server with. -->
       <link href="/map_json" id="get_init_data"/>
 
-      <!-- This will be filled in with the correct URL to load the Google maps javascript API. -->
+      <!-- This will be filled in with the correct URL to load the Google maps JavaScript API. -->
       <script type="text/javascript" src="<TMPL_VAR NAME="maps.javascript_url()">"></script>
 
-      <!-- This will load the yui API. If you use a different javascript API this would obviously change. -->
+      <!-- This will load the yui API. If you use a different JavaScript API this would obviously change. -->
       <script type="text/javascript" src="http://yui.yahooapis.com/2.8.0r4/build/yahoo-dom-event/yahoo-dom-event.js"></script>
       <script type="text/javascript" src="http://yui.yahooapis.com/2.8.0r4/build/connection/connection.js"></script>
       <script type="text/javascript" src="http://yui.yahooapis.com/2.8.0r4/build/json/json-min.js"></script>
 
-      <!-- This loads our javascript code. -->
+      <!-- This loads our JavaScript code. -->
       <script type="text/javascript" src="/js/maps.js"></script>
     </head>
     <body>
@@ -489,7 +489,7 @@ We probably have a template file, map.tmpl, some thing like the following:
       <div id="map_canvas">
 
 	<!-- This image will be loaded by the static Google map API. It will be available whilst the
-		javascript based map is loading and if javascript is turned off
+		JavaScript based map is loading and if JavaScript is turned off
 	-->
         <div><img
 		alt="Test map"
@@ -499,7 +499,7 @@ We probably have a template file, map.tmpl, some thing like the following:
 		/>
 	</div>
 
-	<!-- The following will be used if javascript is disabled. 
+	<!-- The following will be used if JavaScript is disabled. 
 	     We can use it display information that would normally be obtained by
 	     hovering over or clicking on markers on the dynamic map display.
 	-->
@@ -539,7 +539,7 @@ The code to actually produce the web page must look something like this:
 	$t->param(maps=>$map);
 	print $t->output;
 
-This is all that would be needed in a javascript free environment. With javascript
+This is all that would be needed in a JavaScript free environment. With JavaScript
 enabled the client is going to ask for the same data in a JSON format (at least
 we are only supporting JSON). The code to service that request will look something like:
 
@@ -547,9 +547,9 @@ we are only supporting JSON). The code to service that request will look somethi
 	my $map = Geo::Google::MapObject->new(....);
 	print $map->json;
 
-=head2 The javascript
+=head2 The JavaScript
 
-As indicated in the markup above we are expecting the javascript to be in a file called maps.js.
+As indicated in the markup above we are expecting the JavaScript to be in a file called maps.js.
 We expect it to look something like the following:
 
   function mapInitialize() {
@@ -564,7 +564,7 @@ We expect it to look something like the following:
 	  /* Part I: Function called in the event of a successful call. */
           success: function(o) {
 
-		/* Convert the JSON response into a javascript object.
+		/* Convert the JSON response into a JavaScript object.
 		   This structure corresponds to the Geo::Google::MapObject in perl
 		   as intermediated by its "json" method.
 		 */
@@ -642,7 +642,7 @@ We expect it to look something like the following:
 =head2 Taking it further
 
 There are lots of variations that can be done with this. The Geo::Google::MapObject object will pass
-on all fields it does not recognize via the C<< json >> function and these can be used by the javascript
+on all fields it does not recognize via the C<< json >> function and these can be used by the JavaScript
 in whatever way required. Similarly fields added to the marker specification will be passed by the C<< markers >>
 function and can be used in the template in whatever way required.
 
@@ -676,7 +676,7 @@ There is no point creating a map object merely to update the underlying data.
 An advantage of using these link elements is that you might have multiple maps to manage.
 By using the link elements to communicate with the client side, a lot more code and templates can be reused.
 
-=item Get the javascript side to read your new link elements.
+=item Get the JavaScript side to read your new link elements.
 
   var move_marker = YAHOO.util.Dom.get('move_marker').href;
 
@@ -780,7 +780,7 @@ You need to have one of these which can be obtained from L<http://code.google.co
 
 =item Javascript and AJAX
 
-We assume a degree of familiarity with javascript, AJAX and client side programming.
+We assume a degree of familiarity with JavaScript, AJAX and client side programming.
 For the purposes of documentation we assume YUI: L<http://developer.yahoo.com/yui/>, but this
 choice of framework is not mandated.
 
