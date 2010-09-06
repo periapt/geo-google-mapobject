@@ -236,7 +236,7 @@ sub _autocalculate {
 
 =head2 calculate_zoom_and_center
 
-This function tales a reference to an array of marker specifications
+This function takes a reference to an array of marker specifications
 and a maximum zoom level and returns a pair consisting of a suggested zoom level
 and a center.
 
